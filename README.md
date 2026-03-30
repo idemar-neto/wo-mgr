@@ -83,7 +83,7 @@ O `wo-mgr.jsx` é um componente **self-contained** — sem dependências externa
 
 ```jsx
 // App.jsx
-import WoManager from './WoManager'
+import WoManager from './wo-mgr'
 
 export default function App() {
   return <WoManager />
