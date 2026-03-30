@@ -377,59 +377,50 @@ function useToast() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   SAMPLE
+   LOCALSTORAGE HELPERS
 ══════════════════════════════════════════════════════════════════════════ */
-const SAMPLE = `LISTA-FUTEBOL W.O -28 / 03
+const LS_KEY = "womgr_v1";
 
-1 Otavio
-2 Guilherme 
-3 Neto
-4 Luiz
-5 fernando 
-6 Pina
-7 BR7
-8 Leo
-9 Airton
-10 Rodrigo
-11 Alexandre 
-12 Chicão 
-13 Felipe 
-14 Dinho
-15 Michel 
-16 Jonas 
-17 
-18 
+function lsLoad() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
 
-GOLEIROS
-1 Del
-2 Orlando
-3 
-4
-
-AUSENTES
-1 Leandro ✈️
-2 Paulo 🚑
-3  WILL 🚑 
-4 Brunno 👨🏽‍💻
-5 Lucas Henrique
-6 Henrique
-7 Denis
-8 Gustavo`;
+function lsSave(patch) {
+  try {
+    const current = lsLoad();
+    localStorage.setItem(LS_KEY, JSON.stringify({ ...current, ...patch }));
+  } catch { /* storage full or unavailable */ }
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
    APP
 ══════════════════════════════════════════════════════════════════════════ */
 export default function App() {
+  // Hydrate initial state from localStorage (runs only once)
+  const _ls = lsLoad();
+
   const [tab, setTab]           = useState("input");
-  const [raw, setRaw]           = useState(null);
-  const [parsed, setParsed]     = useState(null);
-  const [presence, setPresence] = useState({}); // { name: isoString }
-  const [numTeams, setNumTeams] = useState(2);
-  const [perTeam, setPerTeam]   = useState(5);
-  const [kickoffStr, setKickoffStr] = useState(""); // "HH:MM"
-  const [teamsData, setTeamsData]   = useState(null);
+  const [raw, setRaw]           = useState(_ls.raw ?? null);
+  const [parsed, setParsed]     = useState(_ls.parsed ?? null);
+  const [presence, setPresence] = useState(_ls.presence ?? {}); // { name: isoString }
+  const [numTeams, setNumTeams] = useState(_ls.numTeams ?? 2);
+  const [perTeam, setPerTeam]   = useState(_ls.perTeam ?? 5);
+  const [kickoffStr, setKickoffStr] = useState(_ls.kickoffStr ?? ""); // "HH:MM"
+  const [teamsData, setTeamsData]   = useState(_ls.teamsData ?? null);
   const [toastMsg, showToast]       = useToast();
   const [now, setNow]               = useState(new Date());
+
+  // Persist every relevant state change to localStorage
+  useEffect(() => { lsSave({ raw }); }, [raw]);
+  useEffect(() => { lsSave({ parsed }); }, [parsed]);
+  useEffect(() => { lsSave({ presence }); }, [presence]);
+  useEffect(() => { lsSave({ numTeams }); }, [numTeams]);
+  useEffect(() => { lsSave({ perTeam }); }, [perTeam]);
+  useEffect(() => { lsSave({ kickoffStr }); }, [kickoffStr]);
+  useEffect(() => { lsSave({ teamsData }); }, [teamsData]);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 15000);
@@ -553,7 +544,7 @@ export default function App() {
                 <textarea value={raw ?? ""} onChange={e=>setRaw(e.target.value)} spellCheck={false} placeholder="Cole a lista do grupo (com seções GOLEIROS e AUSENTES)"/>
                 <div className="btn-row">
                   <button className="btn btn-primary" onClick={handleParse}>⚡ Processar Lista</button>
-                  <button className="btn btn-ghost" onClick={()=>{setRaw("");setParsed(null);}}>🗑️ Limpar</button>
+                  <button className="btn btn-ghost" onClick={()=>{setRaw("");setParsed(null);setPresence({});setTeamsData(null);localStorage.removeItem(LS_KEY);}}>🗑️ Limpar</button>
                 </div>
               </div>
 
@@ -717,7 +708,7 @@ export default function App() {
 
                 <div className="btn-row">
                   <button className="btn btn-outline" onClick={markAll}>✅ Marcar Todos</button>
-                  <button className="btn btn-ghost" onClick={()=>{setPresence({});setTeamsData(null);showToast("🔄 Resetado!");}}>🔄 Resetar</button>
+                  <button className="btn btn-ghost" onClick={()=>{setPresence({});setTeamsData(null);lsSave({presence:{},teamsData:null});showToast("🔄 Resetado!");}}>🔄 Resetar</button>
                 </div>
               </>
             )
