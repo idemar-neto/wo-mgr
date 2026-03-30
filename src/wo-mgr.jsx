@@ -84,7 +84,11 @@ function buildTeams({ presence, parsed, numTeams, perTeam, kickoffISO }) {
   const eligibleStarters = allPresent.slice(0, spotsOnField);
   // The rest wait — in arrival order
   const queue = allPresent.slice(spotsOnField);
-
+  
+  const nextOutPlayers = eligibleStarters
+  	.sort((a,b) => new Date(presence[b.name]) - new Date(presence[a.name]))
+  	.slice(0, queue.length);
+  	
   // Shuffle only the eligible starters (so teams are random but the right people play)
   const shuffled = [...eligibleStarters];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -107,10 +111,8 @@ function buildTeams({ presence, parsed, numTeams, perTeam, kickoffISO }) {
   const lateQueue = [...parsed.players]
   	.filter(p => eligibleStarters.find(e => e.name == p.name) == null && kickoffISO && new Date(presence[p.name]) > new Date(kickoffISO))
   	.sort((a, b) => new Date(presence[a.name]) - new Date(presence[b.name]));
-  
-    console.log(lateQueue);
 
-  return { teams, queue, gkQueue, lateQueue, totalOnField: eligibleStarters.length };
+  return { teams, queue, gkQueue, lateQueue, nextOutPlayers, totalOnField: eligibleStarters.length };
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -316,9 +318,11 @@ input[type=time]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia(1
   font-family: 'Anton', sans-serif; font-size: 18px; letter-spacing: 1px;
 }
 .q-header.fifo { background: #ff6b1a10; border: 1px solid #ff6b1a28; border-bottom: none; color: var(--ora2); }
+.q-header.fifout { background: #4fc3f710; border: 1px solid #4fc3f728; border-bottom: none; color: #4fc3f7; }
 .q-header.late { background: #ff454510; border: 1px dashed #ff454530; border-bottom: none; color: var(--red); }
 .q-body { background: var(--card); border-radius: 0 0 12px 12px; overflow: hidden; }
 .q-body.fifo { border: 1px solid #ff6b1a28; border-top: none; }
+.q-body.fifout { border: 1px solid #4fc3f728; border-top: none; }
 .q-body.late { border: 1px dashed #ff454530; border-top: none; }
 .q-row {
   display: flex; align-items: center; gap: 12px;
@@ -327,6 +331,7 @@ input[type=time]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia(1
 .q-row:last-child { border-bottom: none; }
 .q-n { font-family: 'Anton', sans-serif; font-size: 22px; width: 30px; }
 .q-n.fifo-n { color: var(--ora2); }
+.q-n.fifout-n { color: #4fc3f7; }
 .q-n.late-n { color: var(--red); }
 .q-sub { font-size: 11px; color: var(--muted); }
 
@@ -814,6 +819,30 @@ export default function App() {
                               <div style={{flex:1}}>
                                 <div>{cap(p.name)}</div>
                                 <div className="q-sub">Chegou no horário · entra na próxima rodada</div>
+                              </div>
+                              <div style={{fontSize:11,color:"var(--muted)"}}>🕐 {fmtTime(presence[p.name])}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* On-time queue */}
+                    {teamsData.nextOutPlayers.length>0 && (
+                      <div className="q-section">
+                        <div className="q-header fifout">
+                          <span>🔵</span> Fila de Saída
+                          <span style={{fontSize:13,color:"var(--muted)",marginLeft:"auto",fontFamily:"Outfit",fontWeight:400,letterSpacing:0}}>
+                            {teamsData.queue.length} jogadores
+                          </span>
+                        </div>
+                        <div className="q-body fifout">
+                          {teamsData.nextOutPlayers.map((p,i)=>(
+                            <div className="q-row" key={i}>
+                              <div className="q-n fifout-n">{i+1}°</div>
+                              <div style={{flex:1}}>
+                                <div>{cap(p.name)}</div>
+                                <div className="q-sub">Chegou no horário · sai na próxima rodada</div>
                               </div>
                               <div style={{fontSize:11,color:"var(--muted)"}}>🕐 {fmtTime(presence[p.name])}</div>
                             </div>
