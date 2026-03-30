@@ -1,12 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./wo-shuffle-teams.jsx";
+import WoManager from "./wo-mgr.jsx";
 import { registerSW } from "virtual:pwa-register"
 
 registerSW({ immediate: true })
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <WoManager />
   </React.StrictMode>
 );
