@@ -61,9 +61,9 @@ function parseList(raw) {
 ══════════════════════════════════════════════════════════════════════════ */
 
 const TEAM_META = [
-  { name: "Time A", color: "#ff6b1a", bg: "#ff6b1a14" },
-  { name: "Time B", color: "#4fc3f7", bg: "#4fc3f714" },
-  { name: "Time C", color: "#a5d6a7", bg: "#a5d6a714" },
+  { name: "Time Laranja", color: "#ff6b1a", bg: "#ff6b1a14" },
+  { name: "Time Preto", color: "#dadada", bg: "#d6d6d614" },
+  { name: "Time C", color: "#4fc3f7", bg: "#4fc3f714" },
   { name: "Time D", color: "#ce93d8", bg: "#ce93d814" },
 ];
 
@@ -103,13 +103,12 @@ function buildTeams({ presence, parsed, numTeams, perTeam, kickoffISO }) {
 
   // GKs beyond the starting teams
   const gkQueue = allGKs.slice(numTeams);
-
-  // Flag late arrivals for display
-  const isLate = (p) => kickoffISO && new Date(presence[p.name]) > new Date(kickoffISO);
   
   const lateQueue = [...parsed.players]
-  	.filter(p => kickoffISO && new Date(presence[p.name]) > new Date(kickoffISO))
+  	.filter(p => eligibleStarters.find(e => e.name == p.name) == null && kickoffISO && new Date(presence[p.name]) > new Date(kickoffISO))
   	.sort((a, b) => new Date(presence[a.name]) - new Date(presence[b.name]));
+  
+    console.log(lateQueue);
 
   return { teams, queue, gkQueue, lateQueue, totalOnField: eligibleStarters.length };
 }
@@ -225,7 +224,7 @@ input[type=time]::-webkit-calendar-picker-indicator { filter: invert(.4) sepia(1
 .btn-danger { background: transparent; border: 1.5px solid var(--red); color: var(--red); }
 .btn-danger:hover { background: #ff454510; }
 .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 7px; }
-.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0px; }
 .btn:disabled { opacity:.28; cursor:not-allowed; transform:none!important; filter:none!important; box-shadow:none!important; }
 
 /* STATS */
@@ -623,6 +622,11 @@ export default function App() {
                     <div className="stat-l">Na fila</div>
                   </div>
                 </div>
+                
+                <div className="btn-row">
+                  <button className="btn btn-outline" onClick={markAll}>✅ Marcar Todos</button>
+                  <button className="btn btn-ghost" onClick={()=>{setPresence({});setTeamsData(null);lsSave({presence:{},teamsData:null});showToast("🔄 Resetado!");}}>🔄 Resetar</button>
+                </div>
 
                 {/* Players */}
                 <div className="card">
@@ -705,11 +709,6 @@ export default function App() {
                     ))}
                   </div>
                 )}
-
-                <div className="btn-row">
-                  <button className="btn btn-outline" onClick={markAll}>✅ Marcar Todos</button>
-                  <button className="btn btn-ghost" onClick={()=>{setPresence({});setTeamsData(null);lsSave({presence:{},teamsData:null});showToast("🔄 Resetado!");}}>🔄 Resetar</button>
-                </div>
               </>
             )
           )}
