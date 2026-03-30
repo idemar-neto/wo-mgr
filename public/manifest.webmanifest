@@ -4,9 +4,9 @@
     "description": "W.O. Sorteio Time",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#111827",
-    "theme_color": "#111827",
-    "lang": "en",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "lang": "pt",
     "scope": "/",
     "icons": [
         {

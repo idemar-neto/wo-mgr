@@ -12,7 +12,11 @@ export default defineConfig({
         name: 'W.O. Sorteio Time',
         short_name: 'W.O. Sorteio Time',
         description: 'W.O. Sorteio Time',
-        theme_color: '#00000',
+        theme_color: '#000000',
+        background_color: '#000000',
+        display: 'standalone',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
             src: 'favicon.ico',
