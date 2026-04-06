@@ -3,10 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 /* ══════════════════════════════════════════════════════════════════════════
    PARSER
 ══════════════════════════════════════════════════════════════════════════ */
-function stripEmoji(s) {
+export function stripEmoji(s) {
   return s.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F\u200D]+/gu, "").trim();
 }
-function extractEmoji(s) {
+export function extractEmoji(s) {
   const m = s.match(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]+/gu);
   return m ? m.join("") : "";
 }
@@ -19,7 +19,7 @@ function fmtTime(iso) {
   return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
-function parseList(raw) {
+export function parseList(raw) {
   const lines = raw.split("\n");
   let section = "players";
   const players = [], goalkeepers = [], absent = [];
@@ -67,7 +67,7 @@ const TEAM_META = [
   { name: "Time D", color: "#ce93d8", bg: "#ce93d814" },
 ];
 
-function buildTeams({ presence, parsed, numTeams, perTeam, kickoffISO }) {
+export function buildTeams({ presence, parsed, numTeams, perTeam, kickoffISO }) {
   // Sort outfield players by arrival time
   const allPresent = [...parsed.players]
     .filter(p => presence[p.name])
@@ -166,13 +166,9 @@ export default function App() {
   const [now, setNow] = useState(new Date());
 
   // Persist every relevant state change to localStorage
-  useEffect(() => { lsSave({ raw }); }, [raw]);
-  useEffect(() => { lsSave({ parsed }); }, [parsed]);
-  useEffect(() => { lsSave({ presence }); }, [presence]);
-  useEffect(() => { lsSave({ numTeams }); }, [numTeams]);
-  useEffect(() => { lsSave({ perTeam }); }, [perTeam]);
-  useEffect(() => { lsSave({ kickoffStr }); }, [kickoffStr]);
-  useEffect(() => { lsSave({ teamsData }); }, [teamsData]);
+  useEffect(() => {
+    lsSave({ raw, parsed, presence, numTeams, perTeam, kickoffStr, teamsData });
+  }, [raw, parsed, presence, numTeams, perTeam, kickoffStr, teamsData]);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 15000);
@@ -580,7 +576,7 @@ export default function App() {
                         <div className="q-header fifout">
                           <span>🔵</span> Fila de Saída
                           <span style={{ fontSize: 13, color: "var(--muted)", marginLeft: "auto", fontFamily: "Outfit", fontWeight: 400, letterSpacing: 0 }}>
-                            {teamsData.queue.length} jogadores
+                            {teamsData.nextOutPlayers.length} jogadores
                           </span>
                         </div>
                         <div className="q-body fifout">
